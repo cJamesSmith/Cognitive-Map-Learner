@@ -14,7 +14,6 @@ class LosseParams(NamedTuple):
     xty: jax.Array
     w: jax.Array
 
-
 def _to_1d_index(indices, offsets, n_feat, bin_dim, n_bins):
     """Compute the flattened index into the weight matrix."""
     n_grids_per_lsh = (n_bins + 1) ** bin_dim
@@ -38,10 +37,6 @@ def _to_1d_index(indices, offsets, n_feat, bin_dim, n_bins):
 
 
 class Losse:
-    """Linear regressor with LOcality Sensitive Sparse Encoding (Losse).
-
-    We update the linear weights online sparsely following Algorithm.2 in the paper, i.e., computing the incremental closed-form solution based on newly incoming data points.
-    """
 
     def __init__(
         self,
@@ -166,9 +161,9 @@ if __name__ == "__main__":
         eps=1e-5,
     )
 
-    # losse.init = jax.jit(losse.init)
-    # losse.update = jax.jit(losse.update, donate_argnums=(0,))  # donate to avoid copy
-    # losse.predict = jax.jit(losse.predict)
+    losse.init = jax.jit(losse.init)
+    losse.update = jax.jit(losse.update, donate_argnums=(0,))  # donate to avoid copy
+    losse.predict = jax.jit(losse.predict)
 
     # Data.
     N = 200
@@ -176,7 +171,8 @@ if __name__ == "__main__":
     # training data 20x less coverage than test data
     xs = jax.device_put(jnp.linspace(-jnp.pi, jnp.pi, train_n).reshape(train_n, 1))
     yx = jax.device_put(jnp.sin(xs))
-    test_xs = jnp.linspace(-jnp.pi, jnp.pi, N).reshape(N, 1)
+    # test_xs = jnp.linspace(-jnp.pi, jnp.pi, N).reshape(N, 1)
+    test_xs = jnp.linspace(-2*jnp.pi, 2*jnp.pi, N).reshape(N, 1)
 
     # Init.
     rng = jax.random.PRNGKey(42)
