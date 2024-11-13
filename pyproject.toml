@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "chex>=0.1.87",
     "gymnasium-robotics>=1.2.4",
     "ipykernel>=6.29.5",
     "jax[cuda12]>=0.4.35",
