@@ -160,6 +160,13 @@ if __name__ == "__main__":
         bin_dim=2,
         eps=1e-5,
     )
+    # losse = Losse(
+    #     inout_dims=(1, 1),
+    #     num_features=1,
+    #     num_bins=1250,
+    #     bin_dim=1,
+    #     eps=1e-5,
+    # )
 
     losse.init = jax.jit(losse.init)
     losse.update = jax.jit(losse.update, donate_argnums=(0,))  # donate to avoid copy
