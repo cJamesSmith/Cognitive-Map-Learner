@@ -20,9 +20,10 @@ def _to_1d_index(indices, offsets, n_feat, bin_dim, n_bins):
     indices = jnp.reshape(indices, (-1, bin_dim, n_feat))
     offsets = jnp.reshape(offsets, (-1, bin_dim, n_feat))
     indices = jnp.stack([indices, indices + 1], axis=-1)  # [-1, bin_dim, n_feat, 2]
+    # Why values is 1-offsets and offsets? Because the distance is the metric of inverted probability.
     values = jnp.stack([1.0 - offsets, offsets], axis=-1)  # [-1, bin_dim, n_feat, 2]
     multiplier = jnp.power(n_bins + 1, jnp.arange(bin_dim - 1, -1, -1))
-    indices *= multiplier[:, None, None]
+    indices *= multiplier[None, :, None, None]
     # shape = (-1, n_feat, ) + (2,) * bin_dim
     shape_suffix = [tuple(*p) for p in np.split(np.eye(bin_dim, dtype=np.int32) + 1, bin_dim)]
     indices = sum(jnp.reshape(indices[:, i], (-1, n_feat, *suffix)) for i, suffix in enumerate(shape_suffix))
@@ -52,7 +53,7 @@ class Losse:
         self.inout_dims = inout_dims
         self.eps = eps
         n_edges = num_bins + 1
-        n_grids_per_lsh = (n_edges + 1) ** bin_dim
+        n_grids_per_lsh = (n_edges) ** bin_dim
         self.d = n_grids_per_lsh * num_features
 
     def init(self, rng: jax.random.PRNGKey) -> LosseParams:
@@ -153,6 +154,13 @@ class Losse:
 
 if __name__ == "__main__":
     # Model.
+    # losse = Losse(
+    #     inout_dims=(1, 1),
+    #     num_features=50,
+    #     num_bins=5,
+    #     bin_dim=2,
+    #     eps=1e-5,
+    # )
     losse = Losse(
         inout_dims=(1, 1),
         num_features=50,
@@ -160,17 +168,10 @@ if __name__ == "__main__":
         bin_dim=2,
         eps=1e-5,
     )
-    # losse = Losse(
-    #     inout_dims=(1, 1),
-    #     num_features=1,
-    #     num_bins=1250,
-    #     bin_dim=1,
-    #     eps=1e-5,
-    # )
 
-    losse.init = jax.jit(losse.init)
-    losse.update = jax.jit(losse.update, donate_argnums=(0,))  # donate to avoid copy
-    losse.predict = jax.jit(losse.predict)
+    # losse.init = jax.jit(losse.init)
+    # losse.update = jax.jit(losse.update, donate_argnums=(0,))  # donate to avoid copy
+    # losse.predict = jax.jit(losse.predict)
 
     # Data.
     N = 200
@@ -182,7 +183,7 @@ if __name__ == "__main__":
     test_xs = jnp.linspace(-2*jnp.pi, 2*jnp.pi, N).reshape(N, 1)
 
     # Init.
-    rng = jax.random.PRNGKey(42)
+    rng = jax.random.PRNGKey(0)
     _rng, rng = jax.random.split(rng)
     model_state = losse.init(_rng)
 
