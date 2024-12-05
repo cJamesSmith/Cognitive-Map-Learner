@@ -702,8 +702,8 @@ wheels = [
 
 [package.optional-dependencies]
 cuda12 = [
-    { name = "jax-cuda12-plugin", extra = ["with-cuda"] },
-    { name = "jaxlib" },
+    { name = "jax-cuda12-plugin", extra = ["with-cuda"], marker = "sys_platform != 'darwin'" },
+    { name = "jaxlib", marker = "sys_platform != 'darwin'"  },
 ]
 
 [[package]]
